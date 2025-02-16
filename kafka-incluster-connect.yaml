@@ -1,0 +1,37 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnect
+metadata:
+  name: change-streaming-connect
+  namespace: kafka
+  annotations:
+    # use-connector-resources configures this KafkaConnect
+    # to use KafkaConnector resources to avoid
+    # needing to call the Connect REST API directly
+    strimzi.io/use-connector-resources: "true"
+spec:
+  version: 3.9.0
+  replicas: 1
+  bootstrapServers: change-streaming-cluster-kafka-bootstrap:9092
+  image: ashwin027/kafka-debezium-connect:latest
+  config:
+    group.id: change-streaming-connect-cluster
+    offset.storage.topic: change-streaming-connect-cluster-offsets
+    config.storage.topic: change-streaming-connect-cluster-configs
+    status.storage.topic: change-streaming-connect-cluster-status
+    # -1 means it will use the default replication factor configured in the broker
+    config.storage.replication.factor: -1
+    offset.storage.replication.factor: -1
+    status.storage.replication.factor: -1
+  # As an alternative to using the image tag, you can build the image with plugins and push it to your container registry
+  # build:
+  #   output:
+  #     type: docker
+  #     image: ashwin027/kafka-debezium-connect:latest
+  #     pushSecret: my-docker-push-secret
+  #   plugins:
+  #     - name: change-streaming-connect-sqlserver
+  #       artifacts:
+  #         - type: maven
+  #           group: io.debezium
+  #           artifact: debezium-connector-sqlserver
+  #           version: 3.0.7.Final

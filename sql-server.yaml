@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sqlserver
+  namespace: kafka
+  labels:
+    app: sqlserver
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sqlserver
+  template:
+    metadata:
+      labels:
+        app: sqlserver
+    spec:
+      containers:
+      - name: sqlserver
+        image: chriseaton/adventureworks:latest
+        ports:
+        - containerPort: 1433
+        env:
+        - name: SA_PASSWORD
+          value: "<Your-SA-Password>"
+        - name: ACCEPT_EULA
+          value: "Y"
+        - name: MSSQL_AGENT_ENABLED
+          value: "true"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sqlserver-service
+  namespace: kafka
+spec:
+  ports:
+  - protocol: TCP
+    port: 1433
+    targetPort: 1433
+  selector:
+    app: sqlserver
