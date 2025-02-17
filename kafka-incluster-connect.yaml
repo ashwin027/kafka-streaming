@@ -22,6 +22,9 @@ spec:
     config.storage.replication.factor: -1
     offset.storage.replication.factor: -1
     status.storage.replication.factor: -1
+    # To exclude the schema from every message, we can turn off the converter schemas.
+    # key.converter.schemas.enable: false
+    # value.converter.schemas.enable: false
   # As an alternative to using the image tag, you can build the image with plugins and push it to your container registry
   # build:
   #   output:

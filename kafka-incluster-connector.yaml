@@ -1,0 +1,27 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnector
+metadata:
+  name: change-streaming-connect-sqlserver
+  labels:
+    strimzi.io/cluster: change-streaming-connect # connect cluster name
+spec:
+  class: io.debezium.connector.sqlserver.SqlServerConnector
+  tasksMax: 1
+  config:
+    snapshot.mode: "initial"
+    database.hostname: "sqlserver-service"
+    database.port: "1433"
+    database.user: "sa"
+    database.password: "<Your-SA-Password>"
+    database.names: "AdventureWorks"
+    topic.prefix: "changes" 
+    table.include.list: "Sales.SalesOrderDetail"
+    schema.history.internal.kafka.bootstrap.servers: "change-streaming-cluster-kafka-bootstrap:9092"
+    schema.history.internal.kafka.topic: "schema-changes"
+    schema.history.internal.recovery.poll.interval.ms: "100"
+    schema.history.internal.recovery.attempts: "10"
+    transforms: "Reroute"
+    transforms.Reroute.type: "io.debezium.transforms.ByLogicalTableRouter"
+    transforms.Reroute.topic.regex: "(.*)\\.(.*)\\.(.*)"
+    transforms.Reroute.topic.replacement: "$3"
+    database.encrypt: "false"
