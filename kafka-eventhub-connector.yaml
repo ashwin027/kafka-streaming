@@ -1,0 +1,32 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnector
+metadata:
+  name: change-streaming-eventhub-connect-sqlserver
+  labels:
+    strimzi.io/cluster: change-streaming-eventhub-connect # connect cluster name
+spec:
+  class: io.debezium.connector.sqlserver.SqlServerConnector
+  tasksMax: 1
+  config:
+    snapshot.mode: "initial"
+    database.hostname: "sqlserver-service"
+    database.port: "1433"
+    database.user: "sa"
+    database.password: "<Your-SA-Password>"
+    database.names: "AdventureWorks"
+    topic.prefix: "changes" 
+    table.include.list: "Sales.SalesOrderDetail"
+    schema.history.internal.kafka.bootstrap.servers: "change-tracker.servicebus.windows.net:9093"
+    schema.history.internal.kafka.topic: "schema-changes"
+    schema.history.internal.consumer.security.protocol: "SASL_SSL"
+    schema.history.internal.consumer.sasl.mechanism: "PLAIN"
+    schema.history.internal.consumer.sasl.jaas.config: "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"$ConnectionString\" password=\"<Your-Connection-String>\";"
+    schema.history.internal.producer.security.protocol: "SASL_SSL"
+    schema.history.internal.producer.sasl.mechanism: "PLAIN"
+    schema.history.internal.producer.sasl.jaas.config: "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"$ConnectionString\" password=\"<Your-Connection-String>\";"
+    transforms: "Reroute"
+    transforms.Reroute.type: "io.debezium.transforms.ByLogicalTableRouter"
+    transforms.Reroute.topic.regex: "(.*)\\.(.*)\\.(.*)"
+    transforms.Reroute.topic.replacement: "$3"
+    database.encrypt: "false"
+

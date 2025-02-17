@@ -1,0 +1,42 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnect
+metadata:
+  name: change-streaming-eventhub-connect
+  namespace: kafka
+  annotations:
+    # use-connector-resources configures this KafkaConnect
+    # to use KafkaConnector resources to avoid
+    # needing to call the Connect REST API directly
+    strimzi.io/use-connector-resources: "true"
+spec:
+  version: 3.9.0
+  replicas: 1
+  bootstrapServers: change-tracker.servicebus.windows.net:9093
+  authentication:
+    type: plain
+    username: $ConnectionString
+    passwordSecret:
+      secretName: eventhub-connection-string
+      password: connectionstring
+  tls:
+      trustedCertificates: []
+  image: ashwin027/kafka-debezium-connect:latest
+  config:
+    group.id: change-streaming-eventhub-connect-cluster
+    offset.storage.topic: change-streaming-eventhub-connect-cluster-offsets
+    config.storage.topic: change-streaming-eventhub-connect-cluster-configs
+    status.storage.topic: change-streaming-eventhub-connect-cluster-status
+    config.storage.replication.factor: 1
+    offset.storage.replication.factor: 1
+    status.storage.replication.factor: 1
+  
+    key.converter: org.apache.kafka.connect.json.JsonConverter
+    value.converter: org.apache.kafka.connect.json.JsonConverter
+    internal.key.converter: org.apache.kafka.connect.json.JsonConverter
+    internal.value.converter: org.apache.kafka.connect.json.JsonConverter
+    internal.key.converter.schemas.enable: false
+    internal.value.converter.schemas.enable: false
+
+    # To exclude the schema from every message, we can turn off the converter schemas.
+    # key.converter.schemas.enable: false
+    # value.converter.schemas.enable: false
